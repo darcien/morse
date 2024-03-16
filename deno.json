@@ -1,10 +1,14 @@
 {
   "name": "@darcien/morse",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "exports": "./mod.ts",
   "publish": {
+    "include": [
+      "LICENSE",
+      "README.md",
+      "**/*.ts"
+    ],
     "exclude": [
-      ".vscode",
       "**/*_test.ts"
     ]
   }
