@@ -1,5 +1,7 @@
 # Morse
 
+[![JSR](https://jsr.io/badges/@darcien/morse)](https://jsr.io/@darcien/morse)
+
 Encode text in morse code.
 
 **This work is in very early stages.**
