@@ -7,7 +7,6 @@
       "LICENSE",
       "README.md",
       "deno.json",
-      "deno.lock",
       "**/*.ts"
     ],
     "exclude": [

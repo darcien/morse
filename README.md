@@ -12,9 +12,7 @@ Encode text in morse code.
 ## Usage
 
 ```ts
-import { encodeMorse } from "jsr:@darcien/morse";
-// Or without `jsr:` specifier for non-Deno
-// import { encodeMorse } from "@darcien/morse";
+import { encodeMorse } from "@darcien/morse";
 
 const input = "SOS SOS";
 
