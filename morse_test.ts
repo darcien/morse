@@ -1,6 +1,11 @@
 import { describe, it } from "https://deno.land/std@0.220.0/testing/bdd.ts";
 import { assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
-import { encodeMorse } from "./morse.ts";
+import {
+  encodeMorse,
+  ENCODING_BY_VARIANT,
+  MorseEncoding,
+  transformSimpleMorseCodeValues,
+} from "./morse.ts";
 
 describe("encodeMorse", () => {
   it("simple encoding (default)", () => {
@@ -84,6 +89,23 @@ describe("encodeMorse", () => {
     );
   });
 
+  describe("custom encoding", () => {
+    it("use passed in encoding", () => {
+      assertEquals(
+        encodeMorse("SOS", { encoding: ENCODING_BY_VARIANT.compact }),
+        "... --- ...",
+      );
+      assertEquals(
+        encodeMorse("hello world", { encoding: ENCODING_BY_VARIANT.compact }),
+        ".... . .-.. .-.. --- / .-- --- .-. .-.. -..",
+      );
+      assertEquals(
+        encodeMorse("MORSE CODE", { encoding: ENCODING_BY_VARIANT.compact }),
+        "-- --- .-. ... . / -.-. --- -.. .",
+      );
+    });
+  });
+
   describe("unsupported chars handling", () => {
     it("skip over unsupported chars", () => {
       assertEquals(encodeMorse("!@#$%^&*()_+-=~,.🦑😊\n\t"), "");
@@ -116,5 +138,51 @@ describe("encodeMorse", () => {
 
     const emoji = encodeMorse(input, { variant: "emoji" });
     assertEquals(emoji, "☝️☝️☝️ 💨💨💨 ☝️☝️☝️       ☝️☝️☝️ 💨💨💨 ☝️☝️☝️");
+  });
+
+  it("works for custom encoding docs example with manual mapping", () => {
+    const myEncoding: MorseEncoding = {
+      variant: "my cool encoding",
+      shortGap: " ",
+      mediumGap: " | ",
+      codeByLetter: {
+        // The map keys should be in lower case
+        s: "dot_dot_lastdot",
+        o: "dash_dash_dash",
+      },
+    };
+
+    const input = "SOS SOS";
+
+    const encoded = encodeMorse(input, { encoding: myEncoding });
+    assertEquals(
+      encoded,
+      "dot_dot_lastdot dash_dash_dash dot_dot_lastdot | dot_dot_lastdot dash_dash_dash dot_dot_lastdot",
+    );
+  });
+
+  it("works for custom encoding docs example with helper", () => {
+    const myEncoding: MorseEncoding = {
+      variant: "my cool encoding",
+      shortGap: " ",
+      mediumGap: " | ",
+      codeByLetter: transformSimpleMorseCodeValues(
+        ENCODING_BY_VARIANT.simple.codeByLetter,
+        {
+          shortMark: "dot",
+          lastShortMark: "lastdot",
+          longMark: "dash",
+          interMarkGap: "_",
+        },
+      ),
+    };
+
+    const input = "SOS SOS";
+
+    const encoded = encodeMorse(input, { encoding: myEncoding });
+    assertEquals(
+      encoded,
+      "dot_dot_lastdot dash_dash_dash dot_dot_lastdot | dot_dot_lastdot dash_dash_dash dot_dot_lastdot",
+    );
   });
 });

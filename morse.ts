@@ -1,7 +1,31 @@
-type MorseEncoding = {
-  variant: string;
+/**
+ * MorseEncoding structure describe how to encode and decode morse code.
+ *
+ * e.g. "MORSE CODE" in simple encoding:
+ * ```
+ * M  O   R   S   E       C    O   D   E
+ * -- --- .-. ... .       -.-. --- -.. .
+ *   ^   ^   ^   ^            ^   ^   ^ -> short gap
+ *                 |-----|              -> medium gap
+ * ```
+ */
+export type MorseEncoding = {
+  /**
+   * Human readable name of the encoding.
+   * Has no effect, it's just for documentation purpose.
+   */
+  variant?: string;
+  /**
+   * Separator between morse characters.
+   */
   shortGap: string;
+  /**
+   * Separator between morse words.
+   */
   mediumGap: string;
+  /**
+   * Mapping of all letters supported in the encoding to their morse code.
+   */
   codeByLetter: Record<string, string | undefined>;
 };
 
@@ -44,10 +68,25 @@ const simpleMorseCodeByLetter: Record<string, string> = {
   0: "-----",
 };
 
+/**
+ * Describe how to map a simple morse code to arbitrary morse encoding.
+ */
 export type FormatSimpleMorseCodeOptions = {
+  /**
+   * Replace dots with this mark. (Default: ".")
+   */
   shortMark?: string;
+  /**
+   * Replace the last dot in a morse word with this mark. (Default: shortMark)
+   */
   lastShortMark?: string;
+  /**
+   * Replace dashes with this mark. (Default: "-")
+   */
   longMark?: string;
+  /**
+   * Separator between marks within a morse code. (Default: "")
+   */
   interMarkGap?: string;
 };
 
@@ -126,12 +165,12 @@ export function transformSimpleMorseCode(
  * ```
  */
 export function transformSimpleMorseCodeValues<
-  T extends Record<string, string>,
+  T extends Record<string, string | undefined>,
 >(simpleCodeByLetter: T, options: FormatSimpleMorseCodeOptions): T {
   return Object.fromEntries(
     Object.entries(simpleCodeByLetter).map(([key, value]) => [
       key,
-      transformSimpleMorseCode(value, options),
+      value ? transformSimpleMorseCode(value, options) : undefined,
     ]),
   ) as T;
 }
@@ -199,6 +238,11 @@ export type EncodeOptions = {
    * Separator for words in the input. (Default: " ")
    */
   inputWordSeparator?: string;
+  /**
+   * Custom morse encoding to use.
+   * If provided, `variant` will be ignored.
+   */
+  encoding?: MorseEncoding;
 };
 
 const SUPPORTED_ENCODINGS = [
@@ -221,9 +265,13 @@ export type MorseVariant =
   | "spoken"
   | "emoji";
 
-const ENCODING_BY_VARIANT = Object.fromEntries(
-  SUPPORTED_ENCODINGS.map((encoding) => [encoding.variant, encoding]),
-);
+/**
+ * Built-in morse encodings by variant name.
+ */
+export const ENCODING_BY_VARIANT: Record<MorseVariant, MorseEncoding> = Object
+  .fromEntries(
+    SUPPORTED_ENCODINGS.map((encoding) => [encoding.variant, encoding]),
+  );
 
 /**
  * Encode the input text in morse code.
@@ -260,10 +308,14 @@ export function encodeMorse(
   input: string,
   options: EncodeOptions = {},
 ): string {
-  const { variant = "simple", inputWordSeparator = " " } = options;
+  const {
+    variant = "simple",
+    inputWordSeparator = " ",
+    encoding: encodingOpt,
+  } = options;
   const words = input.toLowerCase().split(inputWordSeparator);
 
-  const encoding = ENCODING_BY_VARIANT[variant];
+  const encoding = encodingOpt ?? ENCODING_BY_VARIANT[variant];
   return words
     .map((word) => encodeMorseWord(word, encoding))
     .join(encoding.mediumGap);
